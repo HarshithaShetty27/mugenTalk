@@ -13,11 +13,13 @@ const messageSchema = new mongoose.schema({
         type : String,
         default : ""
     },
+    //ghosted?
     seen : {
         type : Boolean,
         default : false
     }
 },{
+    //because we all need to know exactly when someone ignored our message
     timestamps: true
 })
 
@@ -34,7 +36,7 @@ const conversationSchema = new mongoose.Schema({
     },
     messages : [                                 //Array of messages
         {
-            type : mongoose.Schema.ObjectId,
+            type : mongoose.Schema.ObjectId,     // Each message gets its own ObjectId
             ref : 'Message'
         }
     ]

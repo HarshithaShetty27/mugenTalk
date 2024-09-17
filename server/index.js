@@ -1,21 +1,22 @@
 const express = require('express')   // Express framework for creating the server
 const cors= require('cors')     // CORS middleware for handling Cross-Origin requests
 require('dotenv').config()    // Load environment variables from a .env file
-
-// Importing the database connection and router
-const connectDB = require('./config/connectDB')
+const connectDB = require('./config/connectDB')  // Importing the database connection and router
 const router = require('./routes/index')      // Router for handling API routes
+const cookiesParser = require('cookie-parser')  // Middleware to parse cookies from requests    
 
 const app=express()
 
 // Configure CORS to allow requests from the frontend URL specified in .env
 app.use(cors({
     origin: process.env.FRONTEND_URL,
-    credentials: true        // Yes, we'll allow cookies, because who doesn't love cookies?
+    credentials: true        // We'll allow cookies, cuz why not
 }))
 
 // Middleware to parse incoming JSON requests
 app.use(express.json())
+// Middleware to parse cookies
+app.use(cookiesParser())
 
 const PORT =process.env.PORT || 8080   // Setting the server port, either from environment variable or default to 8080
 

@@ -44,7 +44,9 @@ const CheckEmailPage = () => {
           email: ""
         })
 
-        navigate('/password')
+        navigate('/password',{
+          state : response?.data?.data
+        })
       }
 
     } catch (error) {

@@ -3,9 +3,10 @@ import { IoClose } from "react-icons/io5";
 import { Link, useNavigate } from 'react-router-dom';
 import uploadFile from '../helpers/uploadFile';
 import axios from 'axios'
-import toast from 'react-hot-toast';
+import toast from 'react-hot-toast';      // Toast for showing success/error messages
 
 const RegisterPage = () => {
+  // State to hold form input data
   const [data, setData] = useState({
     name: "",
     email: "",
@@ -13,9 +14,11 @@ const RegisterPage = () => {
     profile_pic: ""
   })
 
+  // State to handle uploaded photo information
   const [uploadPhoto, setUploadPhoto] = useState("")
   const navigate = useNavigate()
 
+  // Handler for input field changes
   const handleOnChange = (e) => {
     const { name, value } = e.target
 
@@ -27,13 +30,14 @@ const RegisterPage = () => {
     })
   }
 
+  // Handler for uploading and processing profile photo
   const handleUploadPhoto = async(e) => {
     const file = e.target.files[0]
 
     const uploadPhoto = await uploadFile(file)
-    setUploadPhoto(file)
+    setUploadPhoto(file)     // Store file locally to show its name
 
-    setData((preve)=>{
+    setData((preve)=>{       // Update the profile_pic field with the uploaded image URL
       return{
         ...preve,
         profile_pic : uploadPhoto?.url
@@ -41,6 +45,7 @@ const RegisterPage = () => {
     })
   }
 
+  // Handler to clear the uploaded photo
   const handleClearUploadPhoto = (e) => {
     e.stopPropagation()
     e.preventDefault()
@@ -54,12 +59,12 @@ const RegisterPage = () => {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/api/register`
 
     try {
-      const response = await axios.post(URL,data)
+      const response = await axios.post(URL,data)     // Sending form data to backend API
       console.log("response",response)
 
       toast.success(response.data.message)
 
-      if(response.data.success){
+      if(response.data.success){      // Clear form data after successful registration
         setData({
           name: "",
           email: "",
@@ -144,6 +149,7 @@ const RegisterPage = () => {
               </div>
             </label>
 
+{/* Hidden input field for file selection */}
             <input
               type='file'
               id='profile_pic'

@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";    // Importing `createBrowserRouter` to define the route structure
 import App from "../App";
 import RegisterPage from "../pages/RegisterPage";
 import CheckEmailPage from "../pages/CheckEmailPage";
@@ -8,12 +8,12 @@ import MessagePage from "../components/MessagePage";
 import AuthLayouts from "../layout";
 import ForgotPassword from "../pages/ForgotPassword";
 
-
+// Defining the application's routes
 const router = createBrowserRouter([
     {
-        path : "/",
-        element : <App/>,
-        children : [
+        path : "/",    // Root path
+        element : <App/>,    // Root component that wraps the entire app
+        children : [      // Child routes for various pages
             {
                 path : "register",
                 element : <AuthLayouts><RegisterPage/></AuthLayouts>
@@ -35,8 +35,8 @@ const router = createBrowserRouter([
                 element : <Home/>,
                 children : [
                     {
-                        path : ':userId',
-                        element : <MessagePage/>
+                        path : ':userId',        // Dynamic route for user-specific messages, accessed via user ID
+                        element : <MessagePage/>    // Message page for displaying messages of a particular user
                     }
                 ]
             }

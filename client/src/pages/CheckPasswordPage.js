@@ -12,23 +12,26 @@ import { setToken, setUser } from '../redux/userSlice';
 
 const CheckPasswordPage = () => {
 
+  // Initialize component state to manage password input
   const [data, setData] = useState({
     password: ""
   })
 
-
+  // hooks for navigation, location, and dispatching Redux actions
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useDispatch()
 
   console.log("location", location.state)
 
+  // Effect to redirect to the email page if user data (name) is missing in location state
   useEffect(() => {
     if (!location?.state?.name) {
       navigate('/email')
     }
   }, [])
 
+   // Handler for input change, updates the password state dynamically
   const handleOnChange = (e) => {
     const { name, value } = e.target
 
@@ -41,6 +44,7 @@ const CheckPasswordPage = () => {
   }
 
 
+  // Handler for form submission, checks password against backend API
   const handleSubmit = async (e) => {
     e.preventDefault()
     e.stopPropagation()
@@ -48,11 +52,12 @@ const CheckPasswordPage = () => {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/api/password`
 
     try {
+      // Send POST request to validate password
       const response = await axios({
         method : 'post',
         url: URL,
         data: {
-          userId: location?.state?._id,
+          userId: location?.state?._id, // User ID from location state
           password: data.password
         },
         withCredentials : true
@@ -61,6 +66,7 @@ const CheckPasswordPage = () => {
       toast.success(response.data.message)
 
       if (response.data.success) {
+        // If successful, store token in Redux and local storage, then reset password field
         dispatch(setToken(response?.data?.token))
         localStorage.setItem('token', response?.data?.token)
 

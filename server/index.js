@@ -4,8 +4,9 @@ require('dotenv').config()    // Load environment variables from a .env file
 const connectDB = require('./config/connectDB')  // Importing the database connection and router
 const router = require('./routes/index')      // Router for handling API routes
 const cookiesParser = require('cookie-parser')  // Middleware to parse cookies from requests    
+const {app,server} = require('./socket/index')
 
-const app=express()
+// const app=express()
 
 // Configure CORS to allow requests from the frontend URL specified in .env
 app.use(cors({
@@ -33,7 +34,7 @@ app.use('/api',router)
 
 // Connect to the database and start the server only after a successful connection
 connectDB().then (()=>{
-    app.listen(PORT,()=>{
+    server.listen(PORT,()=>{
         console.log("Server is running at Port "+PORT )   
     })
 })

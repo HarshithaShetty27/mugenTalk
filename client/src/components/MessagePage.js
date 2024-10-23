@@ -9,6 +9,8 @@ import { FaImage } from "react-icons/fa6";
 import { FaVideo } from "react-icons/fa6";
 import uploadFile from '../helpers/uploadFile'
 import { IoClose } from "react-icons/io5";
+import Loading from './Loading'
+import backgroundImage from '../assets/wallapaper.jpeg'
 
 const MessagePage = () => {
   const params = useParams()
@@ -29,6 +31,8 @@ const MessagePage = () => {
     videoUrl: ""
   })
 
+  const [loading, setLoading] = useState(false)
+
   const handleUploadImageVideoOpen = () => {
     setOpenImageVideoUpload(preve => !preve)
   }
@@ -36,7 +40,10 @@ const MessagePage = () => {
   const handleUploadImage = async (e) => {
     const file = e.target.files[0]
 
+    setLoading(true)
     const uploadPhoto = await uploadFile(file)
+    setLoading(false)
+    setOpenImageVideoUpload(false)
 
     setMessage(preve => {
       return {
@@ -58,7 +65,10 @@ const MessagePage = () => {
   const handleUploadVideo = async (e) => {
     const file = e.target.files[0]
 
+    setLoading(true)
     const uploadVideo = await uploadFile(file)
+    setLoading(false)
+    setOpenImageVideoUpload(false)
 
     setMessage(preve => {
       return {
@@ -87,9 +97,19 @@ const MessagePage = () => {
     }
   }, [socketConnection, params?.userId, user])
 
+  const handleOnChange = (e)=>{
+    const {name, value} = e.target
+
+    setMessage(preve =>{
+      return{
+        ...preve,
+        text : value
+      }
+    })
+  }
 
   return (
-    <div>
+    <div style={{backgroundImage : `url(${backgroundImage})`}} className='bg-no-repeat bg-cover'>
       <header className='sticky top-0 h-16 bg-white flex justify-between items-center px-4'>
         <div className='flex items-center gap-4'>
           <Link to={"/"} className='lg:hidden'>
@@ -121,7 +141,7 @@ const MessagePage = () => {
         </div>
       </header>
       {/* show all messages */}
-      <section className='h-[calc(100vh-128px)] overflow-x-hidden overflow-y-scroll scrollbar relative'>
+      <section className='h-[calc(100vh-128px)] overflow-x-hidden overflow-y-scroll scrollbar relative bg-slate-200 bg-opacity-50'>
         {/* upload image display */}
         {
           message.imageUrl && (
@@ -160,6 +180,14 @@ const MessagePage = () => {
           )
         }
 
+        {
+          loading &&(
+            <div className='w-full h-full flex justify-center items-center'>
+              <Loading/>
+            </div>
+          )
+        }
+
         Show all messages
       </section>
 
@@ -192,11 +220,13 @@ const MessagePage = () => {
                     type='file'
                     id='uploadImage'
                     onChange={handleUploadImage}
+                    className='hidden'
                   />
                   <input
                     type='file'
                     id='uploadVideo'
                     onChange={handleUploadVideo}
+                    className='hidden'
                   />
                 </form>
               </div>
@@ -204,7 +234,19 @@ const MessagePage = () => {
           }
 
         </div>
+
+        {/* input box */}
+        <div className='h-full w-full'>
+          <input
+            type='text'
+            placeholder='Message'
+            className='py-1 px-4 outline-none w-full h-full'
+            value={message.text}
+            onChange={handleOnChange}
+          />
+        </div>
       </section>
+
     </div>
   )
 }

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const messageSchema = new mongoose.schema({
+const messageSchema = new mongoose.Schema({
     text : {
         type : String,
         default : ""
@@ -17,6 +17,11 @@ const messageSchema = new mongoose.schema({
     seen : {
         type : Boolean,
         default : false
+    },
+    msgByUserId : {
+        type : mongoose.Schema.ObjectId,
+        required : true,
+        ref : 'User'
     }
 },{
     //because we all need to know exactly when someone ignored our message

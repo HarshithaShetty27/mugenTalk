@@ -1,8 +1,9 @@
 const express = require('express')
 const { Server } = require('socket.io')
-const http  = require('http')
+const http = require('http')
 const getUserDetailsFromToken = require('../helpers/getUserDetailsFromToken')
 const UserModel = require('../models/UserModel')
+const { ConversationModel, MessageModel } = require('../models/ConversationModel')
 
 const app = express()
 
@@ -21,8 +22,8 @@ const io = new Server(server, {
 //online user
 const onlineUser = new Set()
 
-io.on('connection',async(socket)=>{
-    console.log("Connect user",socket.id)
+io.on('connection', async (socket) => {
+    console.log("Connect user", socket.id)
 
     const token = socket.handshake.auth.token
 
@@ -30,34 +31,77 @@ io.on('connection',async(socket)=>{
     const user = await getUserDetailsFromToken(token)
 
     //create a room
-    socket.join(user?._id)
+    socket.join(user?._id.toString())
     onlineUser.add(user?._id?.toString())
 
-    io.emit('onlineUser',Array.from(onlineUser))
+    io.emit('onlineUser', Array.from(onlineUser))
 
-    socket.on('messsage-page',async(userId)=>{
-        console.log('userId',userId)
+    socket.on('messsage-page', async (userId) => {
+        console.log('userId', userId)
         const userDetails = await UserModel.findById(userId).select("-password")
 
-        const payload ={
-            _id : userDetails?._id,
-            name : userDetails?.name,
-            email : userDetails?.email,
-            profile_pic : userDetails?.profile_pic,
-            online : onlineUser.has(userId)
+        const payload = {
+            _id: userDetails?._id,
+            name: userDetails?.name,
+            email: userDetails?.email,
+            profile_pic: userDetails?.profile_pic,
+            online: onlineUser.has(userId)
         }
 
-        socket.emit('message-user',payload)
+        socket.emit('message-user', payload)
+    })
+
+    //new message
+    socket.on('new message', async (data) => {
+
+        //check if conversation is available for both users
+        let conversation = await ConversationModel.findOne({
+            "$or": [
+                { sender: data?.sender, receiver: data?.receiver },
+                { sender: data?.receiver, receiver: data?.sender }
+            ]
+        })
+
+        //if conversation is not available
+        if (!conversation) {
+            const createConversation = await ConversationModel({
+                sender: data?.sender,
+                receiver: data?.receiver
+            })
+            conversation = await createConversation.save()
+        }
+
+        const message = new MessageModel({
+            text: data.text,
+            imageUrl: data.imageUrl,
+            videoUrl: data.videoUrl,
+            msgByUserId : data?.msgByUserId,
+        })
+        const saveMessage = await message.save()
+
+        const updateConversation = await ConversationModel.updateOne({ _id: conversation?._id }, {
+            "$push": { messages: saveMessage._id }
+        })
+
+        const getConversationMessage = await ConversationModel.findOne({
+            "$or": [
+                { sender: data?.sender, receiver: data?.receiver },
+                { sender: data?.receiver, receiver: data?.sender }
+            ]
+        }).populate('messages').sort({updatedAt : -1})
+
+        io.to(data?.sender).emit('message',getConversationMessage.messages)
+        io.to(data?.receiver).emit('message',getConversationMessage.messages)
     })
 
     //disconnect
-    socket.on('disconnect',()=>{
+    socket.on('disconnect', () => {
         onlineUser.delete(user?._id)
-        console.log('Disconnected user',socket.id)
+        console.log('Disconnected user', socket.id)
     })
 })
 
-module.exports={
+module.exports = {
     app,
     server
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link, useParams } from 'react-router-dom'
 import Avatar from './Avatar'
@@ -11,6 +11,8 @@ import uploadFile from '../helpers/uploadFile'
 import { IoClose } from "react-icons/io5";
 import Loading from './Loading'
 import backgroundImage from '../assets/wallapaper.jpeg'
+import { IoMdSend } from "react-icons/io";
+import moment from 'moment' 
 
 const MessagePage = () => {
   const params = useParams()
@@ -32,6 +34,14 @@ const MessagePage = () => {
   })
 
   const [loading, setLoading] = useState(false)
+  const [allMessage, setAllMessage] = useState([])
+  const currentMessage = useRef(null)
+
+  useEffect(()=>{
+    if(currentMessage.current){
+      currentMessage.current.scrollIntoView({behaviour : 'smooth', block : 'end'})
+    }
+  }, [])
 
   const handleUploadImageVideoOpen = () => {
     setOpenImageVideoUpload(preve => !preve)
@@ -94,6 +104,11 @@ const MessagePage = () => {
       socketConnection.on('message-user', (data) => {
         setDataUser(data)
       })
+
+      socketConnection.on('message',(data)=>{
+        console.log('message data',data)
+        setAllMessage(data)
+      })
     }
   }, [socketConnection, params?.userId, user])
 
@@ -106,6 +121,27 @@ const MessagePage = () => {
         text : value
       }
     })
+  }
+
+  const handleSendMessage =(e)=>{
+    e.preventDefault()
+    if(message.text || message.imageUrl || message.videoUrl){
+      if(socketConnection){
+        socketConnection.emit('new message',{
+          sender : user?._id,
+          receiver : params.userId,
+          text : message.text,
+          imageUrl : message.imageUrl,
+          videoUrl : message.videoUrl,
+          msgByUserId : user?._id
+        })
+        setMessage({
+          text: "",
+          imageUrl: "",
+          videoUrl: ""
+        })
+      }
+    }
   }
 
   return (
@@ -188,7 +224,19 @@ const MessagePage = () => {
           )
         }
 
-        Show all messages
+        {/* all messages show here */}
+        <div ref={currentMessage} className='flex flex-col gap-2 py-2 mx-2'>
+          {
+            allMessage.map((msg,index)=>{
+              return(
+                <div className={`bg-white p-1 py-1 rounded w-fit ${user._id === msg.msgByUserId  ? "ml-auto bg-teal-100" : ""}`}>
+                  <p className='px-2'>{msg.text}</p>
+                  <p className='text-xs ml-auto w-fit'>{moment(msg.createdAt).format('hh:mm')}</p>
+                </div>
+              ) 
+            })
+          }
+        </div>
       </section>
 
       {/* send messages */}
@@ -236,7 +284,7 @@ const MessagePage = () => {
         </div>
 
         {/* input box */}
-        <div className='h-full w-full'>
+        <form className='h-full w-full flex gap-2' onSubmit={handleSendMessage}>
           <input
             type='text'
             placeholder='Message'
@@ -244,7 +292,11 @@ const MessagePage = () => {
             value={message.text}
             onChange={handleOnChange}
           />
-        </div>
+          <button className='text-primary hover:text-secondary'>
+            <IoMdSend size={28}/>
+          </button>
+        </form>
+        
       </section>
 
     </div>

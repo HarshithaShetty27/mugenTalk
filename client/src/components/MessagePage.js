@@ -178,10 +178,45 @@ const MessagePage = () => {
       </header>
       {/* show all messages */}
       <section className='h-[calc(100vh-128px)] overflow-x-hidden overflow-y-scroll scrollbar relative bg-slate-200 bg-opacity-50'>
+        
+
+        {/* all messages show here */}
+        <div ref={currentMessage} className='flex flex-col gap-2 py-2 mx-2'>
+          {
+            allMessage.map((msg,index)=>{
+              return(
+                <div className={`bg-white p-1 py-1 rounded w-fit max-w-[230px] md:max-w-sm lg:max-w-md ${user._id === msg.msgByUserId  ? "ml-auto bg-teal-300" : ""}`}>
+                  <div className='w-full'>
+                    {
+                      msg?.imageUrl && (
+                        <img 
+                          src = {msg?.imageUrl}
+                          className='w-full h-full object-scale-down'
+                        />
+                      )
+                    }
+                    {
+                      msg?.videoUrl && (
+                        <video
+                          src = {msg.videoUrl}
+                          className='w-full h-full object-scale-down'
+                          controls
+                        />
+                      )
+                    }
+                  </div>
+                  <p className='px-2'>{msg.text}</p>
+                  <p className='text-xs ml-auto w-fit'>{moment(msg.createdAt).format('hh:mm')}</p>
+                </div>
+              ) 
+            })
+          }
+        </div>
+
         {/* upload image display */}
         {
           message.imageUrl && (
-            <div className='w-full h-full bg-slate-700 bg-opacity-30 flex justify-center items-center rounded overflow-hidden'>
+            <div className='w-full h-full sticky bottom-0 bg-slate-700 bg-opacity-30 flex justify-center items-center rounded overflow-hidden'>
               <div className='w-fit p-2 absolute top-0 right-0 cursor-pointer hover:text-red-600' onClick={handleClearUploadImage}>
                 <IoClose size={30}/>
               </div>
@@ -199,7 +234,7 @@ const MessagePage = () => {
         {/* upload video display */}
         {
           message.videoUrl && (
-            <div className='w-full h-full bg-slate-700 bg-opacity-30 flex justify-center items-center rounded overflow-hidden'>
+            <div className='w-full h-full sticky bottom-0 bg-slate-700 bg-opacity-30 flex justify-center items-center rounded overflow-hidden'>
               <div className='w-fit p-2 absolute top-0 right-0 cursor-pointer hover:text-red-600' onClick={handleClearUploadVideo}>
                 <IoClose size={30}/>
               </div>
@@ -218,25 +253,11 @@ const MessagePage = () => {
 
         {
           loading &&(
-            <div className='w-full h-full flex justify-center items-center'>
+            <div className='w-full h-full flex sticky bottom-0 justify-center items-center'>
               <Loading/>
             </div>
           )
         }
-
-        {/* all messages show here */}
-        <div ref={currentMessage} className='flex flex-col gap-2 py-2 mx-2'>
-          {
-            allMessage.map((msg,index)=>{
-              return(
-                <div className={`bg-white p-1 py-1 rounded w-fit ${user._id === msg.msgByUserId  ? "ml-auto bg-teal-100" : ""}`}>
-                  <p className='px-2'>{msg.text}</p>
-                  <p className='text-xs ml-auto w-fit'>{moment(msg.createdAt).format('hh:mm')}</p>
-                </div>
-              ) 
-            })
-          }
-        </div>
       </section>
 
       {/* send messages */}
